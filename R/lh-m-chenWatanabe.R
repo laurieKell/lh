@@ -1,23 +1,24 @@
-#' chenWatanabe
+#' chenW
 #'
 #' Chen and Watanabe natural mortality equation
+#' provides an estimate of M per year at age as a function of von Bertalanffy growth equation
 #' 
-#' @param par FLPar with von Bertlanffy parameters \code{t0, linf, k} 
-#' @param age for which growth to be predicted
+#' @param age  age at which M is to be predicted
+#' @param par FLPar or numeric vector  with von Bertlanffy parameters \code{t0, linf, k} 
 #' 
 #' #' @export
 #' @docType methods
-#' @rdname vonB
+#' @rdname chenW
 #' 
-#' @seealso \code{\link{invVonB}} \code{\link{gompertz}}  
-#' 
+#' @seealso \code{\link{chenW},\link{gislason}}
+#'  
 #' @examples
 #' \dontrun{
-#' par=FLPar(linf=100,t0=-0.1,k=.4)
-#' age=FLQuant(1:20,dimnames=list(age=1:20))
-#' m  =chenWatanabe(par,age)
+#' par=FLPar(linf=200,k=.5,t0=-.3)
+#' chenW(1:10,par)
 #' }
-chenWatanabe=function(par,age) {
+
+chenWFn=function(age,par) {
   m =par["k"]%/%(1-exp(-par["k"]%*%(age-par["t0"])))
   
   tm =((1/par["k"])%*%log(1-exp(par["k"]%*%par["t0"]))) #%+%par["t0"]
@@ -25,27 +26,30 @@ chenWatanabe=function(par,age) {
   tm=-tm%+%par["t0"]
   ## bug as %-% is %*%
   bit=exp(-par["k"]%*%(tm-par["t0"]))
-  print(tm-par["t0"])
-  print(tm%-%par["t0"])
+#  print(tm-par["t0"])
+#  print(tm%-%par["t0"])
   
   a0=1-bit
   a1=par["k"]%*%bit
-  a2=FLPar(-0.5%*%exp(log(par["k"])%*%2)%*%bit,dimnames=dimnames(a1))
+  a2=FLPar(-0.5*exp(log(par["k"])*2)%*%bit,dimnames=dimnames(a1))
   dimnames(a2)=dimnames(a1)
   age.=age>c(tm)
   #m[age.] =par["k"]/(a0+a1*(age[age.]-tm)+a2*(age[age.]-tm)^2)
 #   m[age.] =par["k"]%/%(a0%+%(a1%*%(age[age.]%-%tm))%+%
 #                       (a2%*%(age[age.]%-%tm)^2))
-z2.<-((a2%*%((age[age.]%-%tm)^2)))
-z1.<-(a0%+%(a1%*%(age[age.]%-%tm)))
 
-  m[age.] =par["k"]%/%(z1.%+%z2.)
+  if (any(age.)){
+    z2.<-((a2%*%((age[age.]%-%tm)^2)))
+    z1.<-(a0%+%(a1%*%(age[age.]%-%tm)))
   
+    m[age.] =par["k"]%/%(z1.%+%z2.)
+    }
+
   m[m<0]=max(m)
   
   return(m)}   
 
-chenWatanabeFn=function(par,age) { #(age,k,t0=-0.1){
+chenWFn2=function(age,par) { #(age,k,t0=-0.1){
   m =par["k"]/(1-exp(-par["k"]*(age-par["t0"])))
   
   tm =-(1/par["k"])*log(1-exp(par["k"]*par["t0"]))+par["t0"]
@@ -61,3 +65,19 @@ chenWatanabeFn=function(par,age) { #(age,k,t0=-0.1){
   m[m<0]=max(m)
   
   return(m)}   
+
+setGeneric('chenW', function(age,par,...)
+  standardGeneric('chenW'))
+setMethod("chenW", signature(age="numeric",par="numeric"),
+          function(age,par,...) 
+            chenWFn2(age,par))
+setMethod("chenW", signature(age="FLQuant",par="numeric"),
+          function(age,par,...) { 
+            res=chenWFn(age,FLPar(par))
+            units(res)="yr^-1"
+            res})
+setMethod("chenW", signature(age="FLQuant",par="FLPar"),
+          function(age,par,...){   
+            res=chenWFn(age,par)
+            units(res)="yr^-1"
+            res})

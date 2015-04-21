@@ -1,4 +1,3 @@
-
 #' lh
 #' 
 #' Uses life history theory to derive parameters for biological relationships,
@@ -14,7 +13,7 @@
 #' @param   \code{b} exponent of length weight relationship
 #' @param   \code{ato95} age at which 95\% of fish are mature, offset to age at which 50\% are mature
 #' @param   \code{sl} selectivity-at-age parameter, standard deviation of lefthand limb of double normal
-#' @param   \code{sr} selectivity-at-age parameter, standard deviation of righthand limb of double normal
+#' @param   \code{sr} stock recruitment relationship
 #' @param   \code{s} steepness of stock recruitment relationship
 #' @param   \code{v} virgin biomass
 #' 
@@ -34,7 +33,7 @@
 # \end{array}
 # \right. }{ (non-Latex version) }
 lh=function(par,
-            growth       =vonB,
+            growth       =lh:::vonB,
             fnM          =function(par,len) exp(10e-3*par["m1"]%-%(log(len)%*%par["m2"])),
             #            fnM          =function(par,len,T=290,a=FLPar(c(a=-2.1104327,b=-1).7023068,c=1.5067827,d=0.9664798,e=763.5074169),iter=dims(par)$iter))
             #                                    exp(a[1]+a[2]*log(len) + a[3]*log(par["linf"]) + a[4]*log(par["k"]) + a[5]/T),
@@ -46,7 +45,7 @@ lh=function(par,
             fish         = 0.5, # proportion of year when fishing happens
             units=if("units" %in% names(attributes(par))) attributes(par)$units else NULL,
             ...){
-  
+
   # Check that spwn and fish are [0, 1]
   if (spwn > 1 | spwn < 0 | fish > 1 | fish < 0)
     stop("spwn and fish must be in the range 0 to 1\n")
@@ -62,33 +61,33 @@ lh=function(par,
     harvest.spwn =args[["harvest.spwn"]]
   else
     harvest.spwn=FLQuant(spwn, dimnames=list(age=range["min"]:range["max"]))
-  
+
   age=FLQuant(range["min"]:range["max"],dimnames=list(age=range["min"]:range["max"],iter=dimnames(par)$iter))
   # Get the lengths through different times of the year
-  stocklen   <- growth(par[c("linf","t0","k")],age+m.spwn)    # stocklen is length at spawning time
-  catchlen   <- growth(par[c("linf","t0","k")],age+fish)      # catchlen is length when fishing happens
-  midyearlen <- growth(par[c("linf","t0","k")],age+0.5)       # midyear length used for natural mortality
-  
+  stocklen   <- growth(age+m.spwn,par[c("linf","t0","k")]) # stocklen is length at spawning time
+  catchlen   <- growth(age+fish,  par[c("linf","t0","k")]) # catchlen is length when fishing happens
+  midyearlen <- growth(age+0.5,   par[c("linf","t0","k")]) # midyear length used for natural mortality
+
   # Corresponding weights
   swt=exp(log(stocklen%*%par["a"]))%*%par["b"]
   cwt=exp(log(catchlen%*%par["a"]))%*%par["b"]
   if ("bg" %in% dimnames(par)$param)  
     swt=exp(log(stocklen%*%par["a"]))%*%par["bg"]
   warning("FLPar%*%FLQuant operator sets 1st dim name to quant regardless")
-  
+
   if ("numeric" %in% is(fnM)) m.=FLQuant(fnM,dimnames=dimnames(age)) else{
     if ("len" %in% names(formals(fnM)))   
-      m.   =fnM(  par=par,len=midyearlen) # natural mortality is always based on mid year length
-    else if ("age" %in% names(formals(fnM)))
-      m.   =fnM(  par=par,age=age+0.5) # natural mortality is always based on mid year length
-    else if ("wt" %in% names(formals(fnM)))
-      m.   =fnM(swt) 
- 
+      m.   =fnM(len=midyearlen, par=par) # natural mortality is always based on mid year length
+    else if ("age" %in% names(formals(fnM))){ 
+      m.   =fnM(age=age+0.5,par=par) # natural mortality is always based on mid year length
+    }else if ("wt" %in% names(formals(fnM)))
+      m.   =fnM(swt,par) 
+   
   names(dimnames(m.))[1]="age"}
   
   mat. =fnMat(par,age + m.spwn) # maturity is biological therefore + m.spwn
   sel. =fnSel(par,age + fish) # selectivty is fishery  based therefore + fish
-  
+
   ## create a FLBRP object to   calculate expected equilibrium values and ref pts
   dms=dimnames(m.)
   res=FLBRP(stock.wt       =swt,
@@ -113,7 +112,7 @@ lh=function(par,
   params(res)=propagate(params(res),dims(res)$iter)
   ## Stock recruitment relationship
   model(res) =do.call(sr,list())$model
-  
+
   if (sr=="shepherd" & !("c" %in% names(par))){
     
     dmns=dimnames(par)
@@ -137,16 +136,16 @@ lh=function(par,
     
     warning("iter(params(res),i)=ab(par[c(s,v),i],sr,spr0=iter(spr0(res),i))[c(a,b)] assignment doesnt work")
     warning("iter(FLBRP,i) doesn't work")
-  }else 
+  }else{
     if (sr=="shepherd")
       params(res)=FLCore:::ab(par[c("s","v","c")],sr,spr0=spr0(res))[c("a","b","c")]
-  else  
-    params(res)=FLCore:::ab(par[c("s","v")],sr,spr0=spr0(res))[c("a","b")]
-  
+    else{ 
+      params(res)=FLCore:::ab(par[c("s","v")],sr,spr0=spr0(res))[c("a","b")]
+      }
+    }
   refpts(res)=propagate(refpts(res)[c("virgin","msy","crash","f0.1","fmax")],dims(par)$iter)
-  
   res=brp(res)
-  
+
   if ("fbar" %in% names(args)) 
     fbar(res)<-args[["fbar"]] else 
       if (any((!is.nan(refpts(res)["crash","harvest"])))) 
@@ -154,7 +153,7 @@ lh=function(par,
   
   names(dimnames(fbar(res)))[1]="age"
   res=brp(res)
-  
+   
   if (!("units" %in% names(attributes(par))))  return(res)
   if (all(is.na(attributes(par)$units)))  return(res)
   

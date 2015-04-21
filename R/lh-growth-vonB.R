@@ -9,34 +9,58 @@
 #' @docType methods
 #' @rdname vonB
 #' 
-#' @seealso \code{\link{invVonB}} \code{\link{gompertz}}  
+#' @seealso \code{\code{\link{gompertz}}  
 #' 
 #' @examples
 #' \dontrun{
 #' par=FLPar(linf=100,t0=0,k=.4)
 #' age=FLQuant(1:10,dimnames=list(age=1:10))
-#' len=vonB(par,age)
-#' age=invVonB(par,len)
+#' len=vonB(age,par)
+#' age=vonB(par,length=len)
 #' }
-vonB=function(par,age){
-  res=par["linf"]%*%(1.0-exp((-par["k"])%*%(age%-%par["t0"])))
+vonBFn=function(x,par){
+  res=par["linf"]%*%(1.0-exp((-par["k"])%*%(x%-%par["t0"])))
   
-  dimnames(res)=dimnames(age)
+  dimnames(res)=dimnames(x)
   res}
 
-invVonB=function(par,len){
-  res=log(1-(len%/%par["linf"]))%/% (-par["k"])%+%par["t0"]
+invVonBFn=function(x,par){
+  res=log(1-(x%/%par["linf"]))%/% (-par["k"])%+%par["t0"]
 
-  dimnames(res)=dimnames(len)
+  dimnames(res)=dimnames(x)
   res}
 
+setGeneric('vonB', function(x,par,...)
+  standardGeneric('vonB'))
+setMethod("vonB", signature(x="numeric",par="numeric"),
+          function(x,par,...) 
+            vonBFn(x,par))
+setMethod("vonB", signature(x="FLQuant",par="numeric"),
+          function(x,par,...) { 
+            res=vonBFn(x,FLPar(par))
+            units(res)=""
+            res})
+setMethod("vonB", signature(x="FLQuant",par="FLPar"),
+          function(x,par,...){   
+            res=vonBFn(x,par)
+            units(res)=""
+            res})
+setMethod("vonB", signature(x="FLPar",par="missing"),
+          function(x,par,length,...){   
+            res=invVonBFn(x=length,par=x)
+            units(res)=""
+            res})
+setMethod("vonB", signature(x="FLPar",par="FLPar"),
+          function(x,par,...){   
+            res=vonBFn(x,par)
+            units(res)=""
+            res})
 # library(numDeriv)
 # par=FLPar(linf=318.9,k=0.093,t0=-0.970)
   # fnL=function(len) invVonB(par,FLQuant(len))
   # fnA=function(age)    vonB(par,FLQuant(age,dimnames=list(age=age)))
   # 
   # grad(fnL,fnA(15))
-
 
 
 # setGeneric('vonB', function(params,data, ...)

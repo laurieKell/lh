@@ -187,8 +187,7 @@ glst=list("dnormal"           =dnormal,
           "richards"          =richards,
           "richardsCapped"    =richardsCapped,
           "schnute"           =schnute,
-          "seldnc"            =seldnc,
-          "invVonB"           =invVonB)
+          "seldnc"            =seldnc)
 
 #rm(list=names(glst))
 

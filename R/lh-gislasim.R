@@ -25,8 +25,8 @@
 #' 
 #' @examples
 #' \dontrun{
-#' data(bd)
-#' bd=fit(bd,swonIndex)}
+#' par=gislasim(FLPar(linf=100))
+#' }
 gislasim=function(par,t0=-0.1,a=0.001,b=3,ato95=1,sl=2,sr=5000,s=0.9,v=1000){
  
   #attach(list(t0=-0.1,a=0.001,b=3,ato95=1,sl=2,sr=5000,s=0.9,v=1000))
@@ -65,7 +65,7 @@ gislasim=function(par,t0=-0.1,a=0.001,b=3,ato95=1,sl=2,sr=5000,s=0.9,v=1000){
       l50=par["l50"]
       }
     
-    a50=invVonB(par,l50)
+    a50=log(1-(l50%/%par["linf"]))%/%(-par["k"])%+%par["t0"]
     dimnames(a50)$params="a50"
     
     par=rbind(par,a50)

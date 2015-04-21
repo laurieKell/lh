@@ -1,14 +1,19 @@
 Package: lh
 Type: Package
-Title: What the package does (short line)
+Title: The lh package includes various methods for modelling life history relationships
 Version: 1.0
 Date: 2014-08-12
 Author: Laurence Kell
 Maintainer: Laurence Kell <laurie@kell.es>
-Description: More about what it does (maybe more than one line)
+Description: The lh package includes various methods for modelling life history relationships, i.e. natural mortality, growth, maturity. There are also example data sets for large pelagics.
 License: GPL (>= 2)
-Depends:
+VignetteBuilder: knitr
+Suggests: knitr,
+    testthat
+Depends: 
     FLCore
-Imports:
+Imports: 
     Rcpp (>= 0.11.2)
 LinkingTo: Rcpp
+LazyLoad: Yes
+LazyData: No

@@ -9,7 +9,7 @@
 #' @docType methods
 #' @rdname logistic
 #' 
-#' @seealso \code{\link{invVonB}} \code{\link{gompertz}}  
+#' @seealso \code{\code{\link{gompertz}}  
 #' 
 #' @examples
 #' \dontrun{

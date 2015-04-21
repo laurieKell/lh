@@ -5,9 +5,9 @@
 #' 
 #' @param   n number of iterations
 #' @param   len an \code{FLQuant}
-#' @param   b autocorrelation parameter, a real number in [0,1]
-# #' @param   trunc get rid of first values equal to trunc, i.e. to allow burn in
 #' @param   sd standard deviation
+#' @param   b autocorrelation parameter, a real number in [0,1]
+#' @param   trunc get rid of first values equal to trunc, i.e. to allow burn in
 #'
 #' @export
 #' @docType methods
@@ -22,18 +22,19 @@
 #' @export
 #' 
 #' @examples
-#' white <- noise(1000,b=0)
+#' \dontrun{
+#' white <- noise(1000,sd=.3,b=0)
 #' plot(white)
 #' acf(white)
 #' 
-#' red <- noise(1000,b=0.8)
+#' red <- noise(1000,sd=.3,b=0.8)
 #' plot(red)
 #' acf(white)
 #' 
-#' blue <- noise(1000,b=-0.8)
+#' blue <- noise(1000,sd=.3,b=-0.8)
 #' plot(blue)
 #' acf(blue)
-#' 
+#' }
 setGeneric('noise', function(n,len, ...) standardGeneric('noise'))
 
 # n  =100
@@ -42,7 +43,7 @@ setGeneric('noise', function(n,len, ...) standardGeneric('noise'))
 # sd =0.3
 # trunc=0
 
-noiseFn<- function(len,b=0,sd=1,trunc=0){
+noiseFn<- function(len,sd=1,b=0,trunc=0){
     mn=0
     x <- rep(0, len+1) # going to hack off the first value at the end
     s <- rnorm(len,mean=mn,sd=sd)
@@ -58,8 +59,11 @@ noiseFn<- function(len,b=0,sd=1,trunc=0){
     
     return(x)}
 
+# setMethod("noise", signature(n='numeric', len="missing"),
+#           function(n,len))
+          
 setMethod("noise", signature(n='numeric', len="FLQuant"),
-          function(n=n,len=len,b=0, sd=0.3) {
+          function(n=n,len=len,sd=0.3,b=0) {
           
           if (dims(len)$iter!=1) stop("len can not have iter>1")
         
@@ -88,7 +92,7 @@ coEff=function(x,sd=1,B=0){
     dev[i]=dev[i]+dev[i-1]*rho
   parC[var]=parC[var]*exp(dev)
   
-  tmp=len2wt(parC,vonB(parC[c("linf","t0","k")],ages(FLCohort(m(stk)))))
+  tmp=len2wt(parC,vonB(ages(FLCohort(m(stk))),parC[c("linf","t0","k")]))
   res=window(as(tmp,"FLQuant"),start=1,end=dims(m(stk))$year)
   
   res}
@@ -107,48 +111,13 @@ cEff=function(stk,par,sigma,rho=0,var="k"){
        dev[i]=dev[i]+dev[i-1]*rho
   parC[var]=parC[var]*exp(dev)
   
-  tmp=len2wt(parC,vonB(parC[c("linf","t0","k")],ages(FLCohort(m(stk)))))
+  tmp=len2wt(parC,vonB(ages(FLCohort(m(stk))),parC[c("linf","t0","k")]))
   res=window(as(tmp,"FLQuant"),start=1,end=dims(m(stk))$year)
   
   res}
 
 
 #Spectral analysis function
-##############################################################
-#' spectra
-#'
-#' A noise generator
-#' 
-#' @param   \code{n}, length of time series to generate
-#' @param   \code{B}, autocorrelation, a real number in [0,1]
-#' @param   \code{trunc}, get rid of first values equal to trunc, i.e. to allow burn in
-#' @param   \code{sd}, standard deviation
-#'
-#' @export
-#' @docType methods
-#' @rdname noise
-#'
-#' @return A vector with autocorrelation equal to B and of length \code{n-trunc}
-#' 
-#' @references Ranta and Kaitala 2001 Proc. R. Soc.
-#' vt = B * vt-1 + s * sqrt(1 - B^2)
-#' s is normally distributed random variable with mean = 0, variance = 1
-#' B is the autocorrelation parameter
-#' @export
-#' 
-#' @examples
-#' white <- noise(1000,B=0)
-#' plot(white)
-#' acf(white)
-#' 
-#' red <- noise(1000,B=0.8)
-#' plot(red)
-#' acf(white)
-#' 
-#' blue <- noise(1000,B=-0.4)
-#' plot(blue)
-#' acf(blue)
-#' 
 spectra <- function(x,fs=1,norm = FALSE, pl = TRUE,omit=-(1:5))
 {
   # Pad x with zeroes to make it's length a power of 2, i.e. length should be 2^something

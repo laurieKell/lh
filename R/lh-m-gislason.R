@@ -1,4 +1,4 @@
-#' chenWatanabe
+#' Gislason
 #'
 #' Chen and Watanabe natural mortality equation
 #' 
@@ -17,5 +17,5 @@
 #' age=FLQuant(1:20,dimnames=list(age=1:20))
 #' m  =chenWatanabe(par,age)
 #' }
-gislason=function(par,len) #(l,linf,k) 
-   exp(0.55-1.61*log(age) %+% 1.44*log(params["linf"]) %+% log(params["k"]))
+gislason=function(x,par) #(l,linf,k) 
+   exp(0.55-1.61*log(x) %+% 1.44*log(params["linf"]) %+% log(params["k"]))
