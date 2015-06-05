@@ -1,0 +1,152 @@
+---
+title: "Life History Package"
+author: "Laurence Kell"
+date: "August 13th, 2014"
+output: rmarkdown::tufte_handout
+---
+
+```{r initKnitr, echo=FALSE, results="asis"}
+library(knitr)
+
+#output: rmarkdown::tufte_handout
+
+# output:
+#   rmdformats::html_clean:
+#     fig_width: 6
+#     fig_height: 6
+#     highlight: pygments
+
+## Global options
+options(max.print="75")
+opts_chunk$set(fig.path="out/",
+               echo =TRUE,
+               eval=TRUE,
+               cache=!TRUE,
+               cache.path="cache/",
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.margin=TRUE, 
+               fig.height=6, 
+               fig.width=4)
+
+opts_knit$set(width=75)
+```
+
+# Introduction
+
+```{r}
+library(lh)
+```
+
+The Package contains various methods for working with life history traits, i.e. natural mortality, growth, maturity. 
+
+<!--
+%% \VignetteEngine{knitr::knitr}
+-->
+
+##Data
+There are several example datasets;
+life history parameters of pelagic species caught in the South Atlantic and Indian Ocean longline fisheries  
+
+```{r}
+data(lhPel)
+names(lhPel)
+```
+
+and Atlantic bonito length frequency data.
+```{r}
+data(bonLn)
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r,fig.cap="Length frequencies",fig.height=4}
+ggplot(bonLn)+
+  geom_histogram(aes(len,weight=n,fill=month))+
+  scale_y_continuous(breaks=c(1))+
+  theme_bw()+
+  xlab("Length")+ylab("Proportion")
+```
+
+
+#Estimating Total Mortality
+
+Beverton and Holt developed a method to estimate total mortality (Z) from length frequency data if the growth parameters are known. Powell and then Wetherall extended this method to estimate the growth parameters as well as mortality, by recognising that the right hand tail of a length frequency distribution is determined by the asymptotic length ($L_{\infty}$) and the ratio between Z and the growth rate (k) of the von Bertalanffy growth curve and that there is a linear relationship between  $\overline{L}-L^\prime$ and $L^\prime$. Where $L^\prime$ can take any value between the smallest and largest sizes. 
+
+\begin{marginnote}{
+\begin{equation}Z=K\frac{L_{\infty}-\overline{L}}{\overline{L}-L^\prime}\end{equation}  
+Relationship between total mortality and length}
+\end{marginnote}
+
+\begin{marginnote}{
+\begin{equation}\overline{L}-L^\prime=a+bL^{\prime}\end{equation}  
+Powell and Weatheralls modification}
+\end{marginnote}
+
+\begin{marginnote}{
+\begin{equation} 
+Z/k=\frac{-1-b}{b}
+\end{equation}  
+Estimate of Z/k}
+\end{marginnote}
+
+\begin{marginnote}{
+\begin{equation}L_{\infty}=-a/b\end{equation} 
+Estimate of $L_{\infty}$} 
+\end{marginnote}
+
+This  allows Z and $L_{\infty}$ to be derived from a regression analysis. While the Beverton and Holt method requires estimates for k and $L_{\infty}$, the Powell-Wetherall method only requires an estimate of k, since $L_{\infty}$ is estimated as well as Z/k. The method therefore provides estimates for Z/k and Z if k is known. 
+
+A change in the slope also allows the selection patterns to be infered. As well as assuming that growth follows the von Bertalanffy growth function, it is assumed that the population is in a steady state with constant exponential mortality, no changes in selection pattern of the fishery and constant recruitment. All of which are violated of course but the method has been shown to provide good indications of total mortality when compared to data rich methods. 
+
+##Atlantic bonito example
+
+Run the Powell-Wetherall method
+
+```{r}
+rslt=with(bonLn, powh(len,n))
+```
+
+Estimates of  $L_{\infty}$ and $Z/k$
+```{r}
+rslt$params
+```
+
+Powell-Weatherall plot
+```{r,fig.height=4}
+ggplot(rslt$data)+
+  geom_path(aes(len,diff),col="grey75")+
+  geom_point(aes(len,diff),size=1)+
+  geom_path(aes(len,hat),col="blue")+
+  theme_bw()
+```
+
+Fish appear to be fully selected at length 47cm.
+
+As a check compare estimate of $L_{/infty}$ with literature value
+```{r}
+subset(lhPel,name=="Sarda sarda")[,c("name","linf","k")]
+```
+
+Estimate Z by multilying by k
+```{r}
+rslt$params["zk"]*subset(lhPel,name=="Sarda sarda")[,"k"]
+```
+
+```{r,eval=FALSE,echo=FALSE}
+[^books_be]: http://www.edwardtufte.com/tufte/books_be
+
+# Sidenotes
+ 
+sidenote. ^[This is a sidenote that was entered using a footnote.] 
+ 
+\marginnote{This is a margin note.  Notice that there isn't a number preceding the note.}
+ 
+Beverton, R. J. H., and S. J. Holt. "A review of methods for estimating mortality rates in exploited fish populations, with special reference to sources of bias in catch sampling." Rapp. P.-v. R??un. Ciem 140 (1956).
+```
+

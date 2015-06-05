@@ -1,0 +1,84 @@
+---
+title: "Natural Mortality"
+author: "Laurence Kell"
+date: "August 13th, 2014"
+output: rmarkdown::tufte_handout
+---
+
+<!--
+%% \VignetteEngine{knitr::knitr}
+-->
+
+```{r initKnitr, echo=FALSE, results="asis"}
+library(knitr)
+
+#output: rmarkdown::tufte_handout
+
+# output:
+#   rmdformats::html_clean:
+#     fig_width: 6
+#     fig_height: 6
+#     highlight: pygments
+
+## Global options
+options(max.print="75")
+opts_chunk$set(fig.path="out/",
+               echo =TRUE,
+               eval=TRUE,
+               cache=TRUE,
+               cache.path="cache/",
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE,
+               fig.margin=TRUE, 
+               fig.height=6, 
+               fig.width=4,
+               eval=FALSE)
+
+opts_knit$set(width=75)
+```
+
+```{r }
+library(ggplot2)
+
+```
+
+# Introduction
+
+Lorenzen 
+$$M_W = 0.3W^{???0.288}$$
+
+$N_t=N_0e^{-M_{t_r}t}$
+
+$M_{t_r}=\frac{1}{T}\sum\limits_{t=t_r}^{T-1}M(W_t)$
+```{r }
+mass=c(1.90,4.23,7.47,11.48,16.04,20.96,26.07,31.22,36.28,41.17,45.83,50.20,54.27,58.03,61.48,64.62)
+
+len  =(mass/2.6935e-5)^(1/2.857)
+mass =2.6935e-5*(len^2.857)
+
+test=data.frame(
+  age     =1:16,
+  len     =len,
+  mass    =mass,
+  hoenig  =0.27725,
+  jensen  =c(0.33,rep(0.195,15)),
+  rickterE=0.32,
+  lorenzen=c(0.25,0.20,0.17,0.15,0.13,0.12,0.12,0.11,0.11,0.10,0.10,0.10,0.09,0.09,0.09,0.09),
+  peterW   =c(0.16,0.13,0.12,0.10,0.10,0.09,0.08,0.08,0.08,0.08,0.07,0.07,0.07,0.07,0.07,0.07),
+  mcgurk=c(0.41,0.31,0.25,0.21,0.19,0.17,0.16,0.15,0.14,0.13,0.13,0.12,0.12,0.12,0.11,0.11),
+  chenW =c(0.43,0.34,0.28,0.25,0.22,0.20,0.19,0.18,0.17,0.17,0.18,0.20,0.22,0.24,0.25,0.26))
+
+rm(mass,len)
+```
+
+```{r }
+source('~/Desktop/flr/git/lh/R/lh-m-lorenzen.R')
+
+ggplot(transform(test,l.=lorenzen(test$mass)))+
+  geom_point(aes(age,lorenzen))+
+  geom_line(aes(age,l.))
+```
+

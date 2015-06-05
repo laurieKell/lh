@@ -9,7 +9,7 @@
 #' @docType methods
 #' @rdname gislason
 #' 
-#' @seealso \code{\link{lorenzen}} 
+#' @seealso \code{\link{lorenzen}}
 #' 
 #' @examples
 #' \dontrun{

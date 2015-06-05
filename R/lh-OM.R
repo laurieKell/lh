@@ -22,7 +22,7 @@
 #' @rdname lh
 #' @return An \code{FLPar} object with parameters
 #' @examples
-#' \dontrun{
+#' \dontrun{?om}
 #' 
 omFn=function(x,b0=.8,b=.1,year=seq(40,90),maxF=5){
   

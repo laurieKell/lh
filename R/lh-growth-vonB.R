@@ -9,7 +9,7 @@
 #' @docType methods
 #' @rdname vonB
 #' 
-#' @seealso \code{\code{\link{gompertz}}  
+#' @seealso \code{\code{\link{gompertz}}}  
 #' 
 #' @examples
 #' \dontrun{
