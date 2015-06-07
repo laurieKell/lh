@@ -1,3 +1,5 @@
+#globalVariables(c("p1","p2","p3","p4","p5","p6"))
+                       
 dnormal <- function(params,data){
   pow <-function(a,b) a^b
   func<- function(data,a1,sl,sr){
@@ -257,22 +259,22 @@ SS3SelParam<-function(param){
   beta   <-numeric(5)
   
   #??1 is the size at which selectivity=1.0 begins,
-  beta[1]<-p1
+  beta[1]<-param[1]
   
   #??2 is the size at which selectivity=1.0 ends,
-  beta[2]<-p2-p1
+  beta[2]<-param[2]-pparam[1]
   
   #??3 determines the slope of the ascending section,
-  beta[3]<-p3
+  beta[3]<-param[p3]
   
   #??4 determines the slope of the descending section,
-  beta[4]<-p4
+  beta[4]<-param[4]
   
   #??5 is the selectivity at Lmin,
-  beta[5]<-p5
+  beta[5]<-param[5]
   
   #??6 is the selectivity at Lmin,
-  beta[6]<-p6
+  beta[6]<-param[p6]
   
   return(beta)}
 

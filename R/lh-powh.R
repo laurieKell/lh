@@ -9,16 +9,16 @@
 #'  Beverton and Holt (1956) developed a method to estimate population parameters 
 #'  such as total mortality (Z) from length data i.e.
 #' 
-#' \deqn{Z=K\frac{L_{\infty}-\overline{L}}{\overline{L}-L^\prime}}
+#' \deqn{Z=K\frac{L_{infinity}-\overline{L}}{\overline{L}-L^\prime}}
 #'                             
 #' Powell (1979) then developed a method, extended by Wetherall et al. (1987), 
 #' to estimate growth and mortality parameters. This assumes that the right hand tail 
 #' of a length frequency distribution is determined by the asymptotic length L 
 #' and the ratio between Z and the growth rate K.
 #' 
-#' The Beverton and Holt methods assumes good estimates for K and $L_{\infty}$, 
+#' The Beverton and Holt methods assumes good estimates for K and $L_{infinity}$, 
 #' while the Powell-Wetherall method only requires an estimate
-#' of K, since $L_{\infty}$ is estimated by the method as well as Z/K. These method 
+#' of K, since $L_{infinity}$ is estimated by the method as well as Z/K. These method 
 #' therefore provide estimates for Z/K, if K is unknown and 
 #' Z if K is known.  
 #' 
@@ -38,12 +38,12 @@
 #' a and b can be estimated by a regression analysis where 
 #' 
 #' \deqn{b={-K}/{Z+K}}
-#' \deqn{a=-bL_{\infty}}
+#' \deqn{a=-bL_{infinity}}
 #' 
 #' Therefore plotting $\overline{L}-L^\prime$ against $L^\prime$ provides an estimate 
-#' of $L_{\infty}$ and Z/K from
+#' of $L_{infinity}$ and Z/K from
 #' 
-#' \deqn{L_{\infty}=-a/b}
+#' \deqn{L_{infinity}=-a/b}
 #' \deqn{Z/K={-1-b}/{b}}
 #' 
 #' If K is known Z can also be esimated
@@ -76,7 +76,10 @@
 #' @rdname lk-funcs
 #' 
 #' @examples
+#' \dontrun{
+#' data(bonLn)
 #' rslt=with(subset(bonLn,year==2013), powh(len,n))
+#' }
 powh=function(len,n,weights=TRUE,fromMode=FALSE){
   
   fn=function(len,n){

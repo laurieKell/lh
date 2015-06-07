@@ -1,3 +1,5 @@
+#globalVariables(c(‘FLCohort’,‘m’,‘FLPar’,‘dims’))
+
 ##############################################################
 #' noise
 #'
@@ -35,7 +37,7 @@
 #' plot(blue)
 #' acf(blue)
 #' }
-setGeneric('noise', function(n,len, ...) standardGeneric('noise'))
+setGeneric('noise', function(n,len,...) standardGeneric('noise'))
 
 # n  =100
 # len=FLQuant(0,dimnames=list(year=1:55)) 

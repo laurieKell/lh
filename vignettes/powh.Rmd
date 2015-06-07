@@ -45,6 +45,7 @@ The Package contains various methods for working with life history traits, i.e. 
 
 <!--
 %% \VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Powell Wetherall}
 -->
 
 ##Data

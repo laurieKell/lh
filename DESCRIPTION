@@ -1,15 +1,15 @@
 Package: lh
 Type: Package
-Title: Life history relationships
-Version: 1.0
-Date: 2014-08-12
+Title: Life History Relationships
+Version: 1.1
+Date: 2015-06-02
 Author: Laurence Kell
 Maintainer: Laurence Kell <laurie@kell.es>
 Description: Includes various for modelling life history relationships, i.e. natural mortality, growth, maturity. There are also example data sets for large pelagics.
-License: GPL (>= 2)
+LICENSE: GPL (>= 2)
 VignetteBuilder: knitr
 Suggests: knitr,
-    testthat
+    testthat,  plyr, reshape, ggplot2
 Depends: 
     FLCore
 Imports: 
