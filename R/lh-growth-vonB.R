@@ -38,22 +38,22 @@ setMethod("vonB", signature(x="numeric",par="numeric"),
 setMethod("vonB", signature(x="FLQuant",par="numeric"),
           function(x,par,...) { 
             res=vonBFn(x,FLPar(par))
-            units(res)=""
+            res@units=""
             res})
 setMethod("vonB", signature(x="FLQuant",par="FLPar"),
           function(x,par,...){   
             res=vonBFn(x,par)
-            units(res)=""
+            res@units=""
             res})
 setMethod("vonB", signature(x="FLPar",par="missing"),
           function(x,par,length,...){   
             res=invVonBFn(x=length,par=x)
-            units(res)=""
+            res@units=""
             res})
 setMethod("vonB", signature(x="FLPar",par="FLPar"),
           function(x,par,...){   
             res=vonBFn(x,par)
-            units(res)=""
+            res@units=""
             res})
 # library(numDeriv)
 # par=FLPar(linf=318.9,k=0.093,t0=-0.970)

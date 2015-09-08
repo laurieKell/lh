@@ -32,12 +32,21 @@
 # 1 & x \ge 0
 # \end{array}
 # \right. }{ (non-Latex version) }
+
 lh=function(par,
             growth       =lh:::vonB,
-            fnM          =function(par,len) exp(10e-3*par["m1"]%-%(log(len)%*%par["m2"])),
-            #            fnM          =function(par,len,T=290,a=FLPar(c(a=-2.1104327,b=-1).7023068,c=1.5067827,d=0.9664798,e=763.5074169),iter=dims(par)$iter))
-            #                                    exp(a[1]+a[2]*log(len) + a[3]*log(par["linf"]) + a[4]*log(par["k"]) + a[5]/T),
-            fnMat        =logistic,
+            #fnM          =lorenzen, #function(par,len) exp(10e-3*par["m1"]%-%((log(len)%*%par["m2"]))),
+            #fnM          =function(par,len,T=290,a=FLPar(c(a=-2.1104327,b=-1.7023068,c=1.5067827,d=0.9664798,e=763.5074169),iter=dims(par)$iter))
+            #                       exp(a[1]%+%(a[2]%*%log(len/100))%+%(a[3]%*%log(par["linf"]/100))%+%(a[4]%*%log(par["k"]))%+%a[5]/T),
+            fnM         =function(par,len) par["m1"]%*%(exp(log(len)%*%par["m2"])), 
+            #fnM          =function(par,len) 0.55*(len^-1.61)%*%(par["linf"]^1.44)%*%par["k"],
+            fnMat        =function(params,data) {
+              a50=FLQuant(ceiling(rep(c(params["a50"]),each=dim(data)[1])),
+                          dimnames=dimnames(data))
+              res=FLQuant(0.5,dimnames=dimnames(data))
+              res[data> a50]=1
+              res[data< a50]=0
+              res},
             fnSel        =dnormal,
             sr           ="bevholt",
             range        =c(min=1,max=40,minfbar=1,maxfbar=40,plusgroup=40),
@@ -51,7 +60,7 @@ lh=function(par,
     stop("spwn and fish must be in the range 0 to 1\n")
   
   args<-list(...)
-  
+
   if (("m.spwn" %in% names(args)))
     m.spwn =args[["m.spwn"]]
   else
@@ -70,6 +79,7 @@ lh=function(par,
 
   # Corresponding weights
   swt=exp(log(stocklen%*%par["a"]))%*%par["b"]
+
   cwt=exp(log(catchlen%*%par["a"]))%*%par["b"]
   if ("bg" %in% dimnames(par)$param)  
     swt=exp(log(stocklen%*%par["a"]))%*%par["bg"]
@@ -77,19 +87,23 @@ lh=function(par,
 
   if ("numeric" %in% is(fnM)) m.=FLQuant(fnM,dimnames=dimnames(age)) else{
     if ("len" %in% names(formals(fnM)))   
-      m.   =fnM(len=midyearlen, par=par) # natural mortality is always based on mid year length
+      m.   =fnM(par=par,len=midyearlen) # natural mortality is always based on mid year length
     else if ("age" %in% names(formals(fnM))){ 
       m.   =fnM(age=age+0.5,par=par) # natural mortality is always based on mid year length
     }else if ("wt" %in% names(formals(fnM)))
       m.   =fnM(swt,par) 
-   
-  names(dimnames(m.))[1]="age"}
   
-  mat. =fnMat(par,age + m.spwn) # maturity is biological therefore + m.spwn
+  names(dimnames(m.))[1]="age"}
+
+  #age<<-age
+#mspwn<<-m.spwn
+#return()
+  mat. =fnMat(par,age + m.spwn) # maturity is biological therefore + m.spwn 
   sel. =fnSel(par,age + fish) # selectivty is fishery  based therefore + fish
 
   ## create a FLBRP object to   calculate expected equilibrium values and ref pts
   dms=dimnames(m.)
+
   res=FLBRP(stock.wt       =swt,
             landings.wt    =cwt,
             discards.wt    =cwt,
@@ -105,14 +119,15 @@ lh=function(par,
             range          =range)
   ## FApex
   #if (!("range" %in% names(args))) range(res,c("minfbar","maxfbar"))[]<-as.numeric(dimnames(landings.sel(res)[landings.sel(res)==max(landings.sel(res))][1])$age)
-  
+
   ## replace any slot passed in as an arg
   for (slt in names(args)[names(args) %in% names(getSlots("FLBRP"))[names(getSlots("FLBRP"))!="fbar"]])
     slot(res, slt)<-args[[slt]]
+
   params(res)=propagate(params(res),dims(res)$iter)
   ## Stock recruitment relationship
   model(res) =do.call(sr,list())$model
-
+  
   if (sr=="shepherd" & !("c" %in% names(par))){
     
     dmns=dimnames(par)
@@ -123,17 +138,18 @@ lh=function(par,
     par.[dimnames(par)$params]=par
     par.["c"]=1
     par=par.}
-  
+
   if (dims(par)$iter>1) {
     warning("Scarab, iters dont work for SRR:sv/ab etc")
     warning("Should be no need to specify mode of FLPar element") 
+    
     params(res)=FLPar(c(a=as.numeric(NA),b=as.numeric(NA)),iter=dims(par)$iter)
     for (i in seq(dims(par)$iter))
       if (sr=="shepherd")
-        params(res)[,i][]=unlist(c(FLCore:::ab(par[c("s","v","c"),i],sr,spr0=iter(spr0(res),i))[c("a","b","c")]))
+        params(res)[,i][]=unlist(c(FLCore:::ab(par[c("s","v","c"),i],sr,spr0=FLCore:::iter(spr0(res),i))[c("a","b","c")]))
     else
-      params(res)[,i][]=unlist(c(FLCore:::ab(par[c("s","v"),i],sr,spr0=iter(spr0(res),i))[c("a","b")]))
-    
+      params(res)[,i][]=unlist(c(FLCore:::ab(par[c("s","v"),i],sr,spr0=FLCore:::iter(spr0(res),i))[c("a","b")]))
+
     warning("iter(params(res),i)=ab(par[c(s,v),i],sr,spr0=iter(spr0(res),i))[c(a,b)] assignment doesnt work")
     warning("iter(FLBRP,i) doesn't work")
   }else{
@@ -143,13 +159,14 @@ lh=function(par,
       params(res)=FLCore:::ab(par[c("s","v")],sr,spr0=spr0(res))[c("a","b")]
       }
     }
-  refpts(res)=propagate(refpts(res)[c("virgin","msy","crash","f0.1","fmax")],dims(par)$iter)
+
+  refpts(res)=propagate(FLBRP:::refpts(res)[c("virgin","msy","crash","f0.1","fmax")],dims(par)$iter)
   res=brp(res)
 
   if ("fbar" %in% names(args)) 
     fbar(res)<-args[["fbar"]] else 
-      if (any((!is.nan(refpts(res)["crash","harvest"])))) 
-        fbar(res)<-FLQuant(seq(0,1,length.out=101),quant="age")%*%refpts(res)["crash","harvest"]
+      if (any((!is.nan(FLBRP:::refpts(res)["crash","harvest"])))) 
+        fbar(res)<-FLQuant(seq(0,1,length.out=101),quant="age")%*%FLBRP:::refpts(res)["crash","harvest"]
   
   names(dimnames(fbar(res)))[1]="age"
   res=brp(res)

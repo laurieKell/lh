@@ -1,3 +1,10 @@
+mf2FLPar=function(x){
+  dmns=dimnames(x)[2:1]
+  names(dmns)=c("params","iter")
+  x=t(as.matrix(x))
+  
+  FLPar(array(x,dim=dim(x),dimnames=dmns),units="")}
+
 #' gislasim
 #' 
 #' Takes an \code{FLPar} object with life history and selectivity parameters
@@ -29,6 +36,8 @@
 #' }
 gislasim=function(par,t0=-0.1,a=0.001,b=3,ato95=1,sl=2,sr=5000,s=0.9,v=1000){
  
+  if("data.frame"%in%class(par)) par=mf2FLPar(par)
+  
   #attach(list(t0=-0.1,a=0.001,b=3,ato95=1,sl=2,sr=5000,s=0.9,v=1000))
   
   names(dimnames(par)) <- tolower(names(dimnames(par)))
@@ -47,8 +56,8 @@ gislasim=function(par,t0=-0.1,a=0.001,b=3,ato95=1,sl=2,sr=5000,s=0.9,v=1000){
   if (!("k"     %in% dimnames(par)$params)) par=rbind(par,FLPar("k"=3.15*par["linf"]^(-0.64), iter=dims(par)$iter)) # From Gislason et al 2008, all species combined
   
   # Natural mortality parameters from Model 2, Table 1 Gislason 2010
-  par=rbind(par,FLPar(m1=0.55+1.44*log(par["linf"])+log(par["k"]), iter=dims(par)$iter),
-                FLPar(m2=-1.61                                   , iter=dims(par)$iter))
+  par=rbind(par,FLPar(m1= 0.55*(par["linf"]^1.44)%*%par["k"], iter=dims(par)$iter),
+                FLPar(m2=-1.61                              , iter=dims(par)$iter))
 
   if (!("ato95" %in% dimnames(par)$params)) par=rbind(par,FLPar("ato95" =ato95, iter=dims(par)$iter))
   if (!("sl"    %in% dimnames(par)$params)) par=rbind(par,FLPar("sl"    =sl,    iter=dims(par)$iter))
@@ -114,7 +123,7 @@ setUnits=function(res, par){
                "vcost"=          "",           
                "fcost"=          "")            
 
+  
+ res@units[names(allUnits)]=allUnits
     
-    units(res)[names(allUnits)]=allUnits
-    
-    return(res)}
+ return(res)}

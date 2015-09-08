@@ -1,0 +1,124 @@
+---
+output:
+  rmdformats::html_clean:
+    fig_width:  8
+    fig_height: 8
+    highlight: pygments
+---
+
+```{r   knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=FALSE,
+               cache=TRUE,
+               fig.path  ="tex/",
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+```
+
+
+```{r-init}
+library(lh)
+library(FLBRP)
+library(plyr)
+
+theme_set(theme_bw())
+
+dirMy="/home/laurie/flr/git/lh"
+```
+
+```{r}
+par=t(cbind(# Productivity (r) Cortez
+            r   =c(0.286, 0.048, 0.073), 
+                  
+            # Growth
+            # "linf"  "k"  "t0"    "a"     "b"
+            linf=c(310,  310, 365.6),
+            k   =c(0.13, 0.06,0.087),
+            t0  =c(-1.77,-5.9,NA),
+            l0  =c(NA,   NA,  88.4),
+            a   =c(0.000000804,0.00005,0.0000052432),
+            b   =c(3.232,2.713,3.1407),
+      
+            # Fecundity
+            # "ato95" "a50" "asym"  "bg" 
+            frq  =c(1,    1,   1),
+            fec  =c(38,   4,   29/2)/2,
+            a50  =rep(NA,3),
+            ato95=rep(NA,3),
+            l50  =c((173+221)/2,218,275),
+            lto95=c(221,230,NA),
+            asym =c(1,    1,   1),
+                  
+            # Natural Mortality for Lorenzen
+            mr  =rep(0.1,3),
+            lr  =rep(100,3),
+                  
+            # Selectivity
+            #  "sl"    "sr"  "a1"
+            sl  =rep(2, 3),
+            sr  =rep(100000,3),
+            a1  =rep(NA,3),
+                  
+            # SRR
+            v     =rep(10000,3),
+            beta  =rep(1,   3),
+            mfrac =rep(.9, 3),
+                  
+            # Other
+            maxage=c((16+21)/2,NA,38),
+            sex   =c(0.8,1,1)))
+```
+
+```{r}
+#Stocks
+spp=c("bet","yft", "skj",
+      "alb","bfte","bftw",
+      "bsh","por","sma",
+      "cod","had", "her","ple","sol")
+
+#Growth
+linf =c(217.3,     245.541,    NA, 122.8,  318.85*.96,   NA,  310,  310, 365.6, NA, NA, NA, NA, NA)
+k    =c(  0.18,      0.281,    NA, 0.217,   0.093,        NA,  0.13, 0.06,0.087, NA, NA, NA, NA, NA)
+t0   =c( -0.709,    -0.0423,   NA, NA,     -0.97-.16667, NA, -1.77,-5.9,NA,    NA, NA, NA, NA, NA)  
+l0   =c( NA,            NA,    NA, NA,      NA,           NA,    NA,   NA,   88.4,    NA, NA, NA, NA, NA)  
+a    =c(  2.396e-5,     NA,    NA, 1.339e-5, 1.96e-5,      NA, 0.000000804,0.00005,0.0000052432, NA, NA, NA, NA, NA)  
+b    =c(  2.9774,       NA,    NA, 3.1006, 3.0092,       NA, 3.232,2.713,3.1407, NA, NA, NA, NA, NA)  
+
+#Fecundity
+ato95=c(NA,   NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+lto95=c(NA,   NA, NA, NA, NA, NA, 221,230,NA, NA, NA, NA, NA, NA)
+a50  =c(3,    NA, NA, NA, 4, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+l50  =c(105,  NA, NA, NA, NA, NA, (173+221)/2,218,275, NA, NA, NA, NA, NA)
+asym =rep(1,  length(spp))     
+bg   =rep(1,  length(spp))     
+
+#Stock Recruit
+s    =rep(1000,length(spp))     
+v    =rep(0.9, length(spp))
+ 
+#Selectivity
+a1  =a50
+sl  =rep(0.2,  length(spp))
+sr  =rep(5000, length(spp))
+
+#M
+m1  =c(0.2795, NA, NA, NA, NA, NA, .1,.1,.1, NA, NA, NA, NA, NA)
+m2  =rep(-0.288, length(spp))
+
+dataRich=data.frame(linf=linf,k=k,t0=t0,a=a,b=b,
+                    a50=a50,l50=l50,ato95=ato95,asym=asym,bg=bg,
+                    a1=a1,sl=sl,sr=sr,
+                    s=s,v=v,
+                    m1=m1,
+                    m2=m2)
+dimnames(dataRich)[[1]]=spp
+```
+

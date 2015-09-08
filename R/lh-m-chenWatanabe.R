@@ -74,10 +74,10 @@ setMethod("chenW", signature(age="numeric",par="numeric"),
 setMethod("chenW", signature(age="FLQuant",par="numeric"),
           function(age,par,...) { 
             res=chenWFn(age,FLPar(par))
-            units(res)="yr^-1"
+            res@units="yr^-1"
             res})
 setMethod("chenW", signature(age="FLQuant",par="FLPar"),
           function(age,par,...){   
             res=chenWFn(age,par)
-            units(res)="yr^-1"
+            res@units="yr^-1"
             res})

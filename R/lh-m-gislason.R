@@ -19,3 +19,7 @@
 #' }
 gislason=function(x,par) #(l,linf,k) 
    exp(0.55-1.61*log(x) %+% 1.44*log(params["linf"]) %+% log(params["k"]))
+
+gislason=function(x,par) #(l,linf,k) 
+   exp(0.6590-(1.6911*log(x))%+%(1.4440*log(params["linf"]))%+%(0.8976*log(params["k"])))
+

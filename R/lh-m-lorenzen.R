@@ -32,15 +32,15 @@ setGeneric('lorenzen', function(wt,par,...)
 setMethod('lorenzen', signature(wt='FLQuant',par='missing'),
       function(wt,...) { 
           res=lorenzenFn(wt)
-          units(res)='yr^-1'
+          res@units='yr^-1'
           res})
 setMethod('lorenzen', signature(wt='FLQuant',par='numeric'),
       function(wt,par,...) { 
           res=par[1]*wt^par[2]
-          units(res)='yr^-1'
+          res@units='yr^-1'
           res})
 setMethod('lorenzen', signature(wt='FLQuant',par='FLPar'),
       function(wt,par,...){   
           res=par[1]%*%(wt%^%par[2])
-          units(res)='yr^-1'
+          res@units='yr^-1'
           res})

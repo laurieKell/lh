@@ -25,18 +25,23 @@ logistic <- function(par,age) { #x, a50, ato95){
       return(asym)
     return(asym/(1.0+pow(19.0,(a50-x)/ato95)))}
   
-  sapply(age,func,par["a50"],par["ato95"],par["asym"])} 
+  sapply(age,func,par["a50"],par["ato95"],par["asym"])
+} 
 
 pow<-function(a,b) a^b
 logisticFn<-function(params,data) { #x,a50,ato95,asym=1.0){  
   
-  res<-params["asym"]%/%(1.0+pow(19.0,(params["a50"]%-%data)%/%params["ato95"]))
+  res =params["asym"]%/%(1.0+pow(19.0,(params["a50"]%-%data)%/%params["ato95"]))
+  res[is.na(res)]=0
   asym=FLQuant(1,dimnames=dimnames(data))%*%params["asym"]
-  res[(params["a50"]%-%data)%/%params["ato95"] >  5]<-0
-  res[(params["a50"]%-%data)%/%params["ato95"] < -5]<-asym[(params["a50"]%-%data)%/%params["ato95"] < -5]
+  grt =(params["a50"]%-%data)%/%params["ato95"] >  5
+  lss =(params["a50"]%-%data)%/%params["ato95"] < -5
   
-  dmns=dimnames(res)
+  res[grt]=0
+  res[lss]=asym[lss]
+  
+  dmns          =dimnames(res)
   names(dmns)[1]="age"
-  dimnames(res)=dmns
+  dimnames(res) =dmns
   
   return(res)}
